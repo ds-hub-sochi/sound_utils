@@ -1,5 +1,6 @@
 import glob
 
+import torch
 import torchaudio
 from torch.utils.data import Dataset
 
@@ -40,18 +41,18 @@ class WavSoundClassificationDataset(Dataset):
         path_to_current_file: str = self._files_to_use[index]
 
         current_file_class: int = self._label2class[path_to_current_file.split('/')[-3]]
-
+        
         waveform, sample_rate = torchaudio.load(
             path_to_current_file,
             backend='ffmpeg',
             normalize=True,
         )
 
-        if sample_rate != sample_rate_to_use:
+        if sample_rate != self._sample_rate_to_use:
             waveform = torchaudio.functional.resample(
                 waveform,
                 orig_freq=sample_rate,
-                new_freq=sample_rate_to_use,
+                new_freq=self._sample_rate_to_use,
             )
 
         return (waveform, current_file_class)
@@ -70,7 +71,7 @@ class SoundSpectrogramDataset(Dataset):
         super().__init__()
 
         self._sample_rate_to_use: int = sample_rate_to_use
-
+        
         self._label2class: dict[str, int] = label2class
 
         all_files: list[str] = glob.glob(f'{data_dir}/*/*.wav')
@@ -81,7 +82,7 @@ class SoundSpectrogramDataset(Dataset):
             file_label: str = file.split('/')[-3]
             if file_dataset in datasets_to_use and file_label in labels_to_use:
                 self._files_to_use.append(file)
-
+                
         self._n_mels: int = n_mels
 
     def __len__(
@@ -96,22 +97,22 @@ class SoundSpectrogramDataset(Dataset):
         path_to_current_file: str = self._files_to_use[index]
 
         current_file_class = self._label2class[path_to_current_file.split('/')[-3]]
-
+        
         waveform, sample_rate = torchaudio.load(
             path_to_current_file,
             backend='ffmpeg',
             normalize=True,
         )
 
-        if sample_rate != sample_rate_to_use:
+        if sample_rate != self._sample_rate_to_use:
             waveform = torchaudio.functional.resample(
                 waveform,
                 orig_freq=sample_rate,
-                new_freq=sample_rate_to_use,
+                new_freq=self._sample_rate_to_use,
             )
 
         melspectrogram_transform = torchaudio.transforms.MelSpectrogram(
-            sample_rate=sample_rate_to_use,
+            sample_rate=self._sample_rate_to_use,
             n_mels=self._n_mels,
         )
         melspectrogram = melspectrogram_transform(waveform)
