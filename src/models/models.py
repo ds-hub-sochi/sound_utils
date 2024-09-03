@@ -1,8 +1,7 @@
 import torch
 import torch.nn.functional as F
-import torch import nn
 import torchaudio
-
+from torch import nn
 
 class MelSpectrogramBasedClassifier(nn.Module):
     def __init__(
@@ -21,7 +20,7 @@ class MelSpectrogramBasedClassifier(nn.Module):
             self._model.conv1 = nn.Conv2d(
                 1,
                 self._model.conv1.out_channels,
-                kernel_size=self._model.conv1.kernel_size[0], 
+                kernel_size=self._model.conv1.kernel_size[0],
                 stride=self._model.conv1.stride[0],
                 padding=self._model.conv1.padding[0],
                 dtype=torch.float32,
@@ -33,7 +32,7 @@ class MelSpectrogramBasedClassifier(nn.Module):
             self._model.conv_proj = nn.Conv2d(
                 1,
                 self._model.conv_proj.out_channels,
-                kernel_size=self._model.conv_proj.kernel_size[0], 
+                kernel_size=self._model.conv_proj.kernel_size[0],
                 stride=self._model.conv_proj.stride[0],
                 padding=self._model.conv_proj.padding[0],
                 dtype=torch.float32,
@@ -75,9 +74,9 @@ class WavBasedClassifier(nn.Module):
         n_first_encoder_layers_to_use: int,
     ):
         super().__init__()
-        
+
         self.feature_extractor: torchaudio.models.Wav2Vec2Model = feature_extractor
-    
+
         hidden_size: int = 0
         if hasattr(
             feature_extractor,
@@ -96,7 +95,7 @@ class WavBasedClassifier(nn.Module):
             hidden_size,
             n_classes,
         )
-        
+
     def forward(
         self,
         input_tensor: torch.Tensor,
@@ -105,7 +104,7 @@ class WavBasedClassifier(nn.Module):
         logits: torch.Tensor = self.linear(features)
 
         return logits
-    
+
     def _get_embeddings(
         self,
         input_tensor: torch.Tensor,
