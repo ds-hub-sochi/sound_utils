@@ -1,6 +1,6 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+import torch import nn
 import torchaudio
 
 
@@ -21,7 +21,7 @@ class MelSpectrogramBasedClassifier(nn.Module):
             self._model.conv1 = nn.Conv2d(
                 1,
                 self._model.conv1.out_channels,
-                kernel_size=self._model.conv1.kernel_size[0],
+                kernel_size=self._model.conv1.kernel_size[0], 
                 stride=self._model.conv1.stride[0],
                 padding=self._model.conv1.padding[0],
                 dtype=torch.float32,
@@ -33,7 +33,7 @@ class MelSpectrogramBasedClassifier(nn.Module):
             self._model.conv_proj = nn.Conv2d(
                 1,
                 self._model.conv_proj.out_channels,
-                kernel_size=self._model.conv_proj.kernel_size[0],
+                kernel_size=self._model.conv_proj.kernel_size[0], 
                 stride=self._model.conv_proj.stride[0],
                 padding=self._model.conv_proj.padding[0],
                 dtype=torch.float32,
@@ -75,32 +75,28 @@ class WavBasedClassifier(nn.Module):
         n_first_encoder_layers_to_use: int,
     ):
         super().__init__()
-
+        
         self.feature_extractor: torchaudio.models.Wav2Vec2Model = feature_extractor
-
+    
         hidden_size: int = 0
         if hasattr(
             feature_extractor,
             'encoder',
         ):
             hidden_size = feature_extractor.encoder.transformer.layers[0].attention.k_proj.out_features
-            self.feature_extractor.encoder.transformer.layers = self.feature_extractor.encoder.transformer.layers[
-                :n_first_encoder_layers_to_use
-            ]
+            self.feature_extractor.encoder.transformer.layers = self.feature_extractor.encoder.transformer.layers[:n_first_encoder_layers_to_use]
         elif hasattr(
             feature_extractor,
             'model',
         ):
             hidden_size = feature_extractor.model.encoder.transformer.layers[0].attention.k_proj.out_features
-            self.feature_extractor.model.encoder.transformer.layers = (
-                self.feature_extractor.model.encoder.transformer.layers[:n_first_encoder_layers_to_use]
-            )
+            self.feature_extractor.model.encoder.transformer.layers = self.feature_extractor.model.encoder.transformer.layers[:n_first_encoder_layers_to_use]
 
         self.linear: nn.Linear = nn.Linear(
             hidden_size,
             n_classes,
         )
-
+        
     def forward(
         self,
         input_tensor: torch.Tensor,
@@ -109,7 +105,7 @@ class WavBasedClassifier(nn.Module):
         logits: torch.Tensor = self.linear(features)
 
         return logits
-
+    
     def _get_embeddings(
         self,
         input_tensor: torch.Tensor,
