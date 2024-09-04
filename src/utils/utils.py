@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-from tqdm import tqdm
 import torch.nn.functional as F
+from tqdm import tqdm
 
 from src.metrics.metrics import target_class_precision, target_class_recall
 
