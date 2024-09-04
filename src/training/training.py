@@ -5,7 +5,7 @@ import torch
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from sound_utils.src.metrics.metrics import target_class_precision, target_class_recall
+from src.metrics.metrics import target_class_precision, target_class_recall
 
 
 def train_step(
@@ -55,14 +55,13 @@ def train_step(
             train_loss.append(loss.item())    
             train_predictions.extend(predictions.cpu().detach().numpy().argmax(axis=1))
             train_targets.extend(targets.cpu().detach().numpy())
-        
-    train_loss = np.mean(train_loss)
+
     train_f1: float = f1_score(train_targets, train_predictions, average='macro')
     train_precision: float = target_class_precision(train_targets, train_predictions, 0)
     train_recall: float = target_class_recall(train_targets, train_predictions, 0)
 
     return {
-        'loss': train_loss,
+        'loss': np.mean(train_loss),
         'f1-macro': train_f1,
         'target recall': train_recall,
         'target precision': train_precision,
