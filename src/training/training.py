@@ -1,7 +1,11 @@
 import pathlib
 
+import numpy as np
 import torch
+from sklearn.metrics import f1_score
 from tqdm import tqdm
+
+from sound_utils.src.metrics.metrics import target_class_precision, target_class_recall
 
 
 def train_step(
@@ -125,7 +129,7 @@ def save_model(
             f'{checkpoint_dir}/{prefix}/{name}.pth',
         )
 
-def train(
+def train(  # pylint: disable=[too-many-arguments]
     model,
     optimizer,
     criterion,
@@ -143,7 +147,7 @@ def train(
         exist_ok=True,
     )
 
-    metric_storage: dict[str, dict[str, float]] = dict()
+    metric_storage: dict[str, dict[str, float]] = {}
 
     keys: list[str] = [
         'loss',
@@ -177,8 +181,8 @@ def train(
             model,
             criterion,
             val_dataloader,
-            device,
             epoch,
+            device,
         )
         for key in keys:
             print(f'Eval {key}:', eval_results[key], end='\n')
@@ -204,4 +208,4 @@ def train(
         'last_model',
     )
 
-    return storage
+    return metric_storage
