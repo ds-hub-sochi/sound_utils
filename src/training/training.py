@@ -91,14 +91,13 @@ def eval_step(
         val_loss.append(loss.item())
         val_predictions.extend(predictions.cpu().numpy().argmax(axis=1))
         val_targets.extend(targets.cpu().numpy())
-        
-    val_loss = np.mean(val_loss)
+
     val_f1: float = f1_score(val_targets, val_predictions, average='macro')
     val_precision: float = target_class_precision(val_predictions, val_targets, 0)
     val_recall: float = target_class_recall(val_predictions, val_targets, 0)
 
     return {
-        'loss': val_loss,
+        'loss': np.mean(val_loss),
         'f1-macro': val_f1,
         'target recall': val_recall,
         'target precision': val_precision,
