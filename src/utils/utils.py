@@ -1,10 +1,16 @@
+import numpy as np
 import torch
+from tqdm import tqdm
+import torch.nn.functional as F
+
+from src.metrics.metrics import target_class_precision, target_class_recall
 
 
 @torch.inference_mode()
 def get_targets_and_predicitons(
     model,
     dataloader,
+    device,
 ) -> tuple[list[float], list[float]]:
     val_predictions: list[float] = []
     val_targets: list[float] = []
@@ -26,11 +32,12 @@ def get_targets_and_predicitons(
 def get_precision_recall_threshold(
     model,
     dataloader,
+    device,
 ) -> tuple[list[float], list[float], list[float]]:
     val_probabilities: list[float] = []
     val_targets: list[float] = []
 
-    for batch, targets in tqdm(validation_dataloader):        
+    for batch, targets in tqdm(dataloader):        
         batch: torch.Tensor = batch.to(device)
         predictions: torch.Tensor = model(batch)
 
