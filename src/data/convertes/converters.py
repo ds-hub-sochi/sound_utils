@@ -75,6 +75,28 @@ class MelSpectrogramConverter(BaseConverter):
         return self._to_mel_spectrogram(waveform)
 
 
+class MelSpectrogramDBConverter(MelSpectrogramConverter):
+    def __init__(
+        self,
+        sample_rate: int,
+        n_fft: int,
+        n_mels: int,
+    ):
+        super().__init__(
+            sample_rate,
+            n_fft,
+            n_mels,
+        )
+
+        self._to_db = T.AmplitudeToDB()
+    
+    def convert(
+        self,
+        waveform: torch.Tensor,
+    ) -> torch.Tensor:
+        return self._to_db(self._to_mel_spectrogram(waveform))
+
+
 class ToMFCCConverter(BaseConverter):
     def __init__(
         self,
