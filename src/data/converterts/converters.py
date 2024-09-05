@@ -6,7 +6,7 @@ import torchaudio.transforms as T
 from torchaudio import functional
 
 
-class BaseConverter(ABC)
+class BaseConverter(ABC):
     @abstractmethod
     def convert(
         self,

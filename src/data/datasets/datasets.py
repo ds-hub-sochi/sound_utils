@@ -4,7 +4,7 @@ import torch
 import torchaudio
 from torch.utils.data import Dataset
 
-from src.data.converters.converters import BaseConverter
+from src.data.converterts.converters import BaseConverter
 
 
 class SoundClassificationDataset(Dataset):
