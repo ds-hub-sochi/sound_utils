@@ -1,9 +1,7 @@
 from abc import abstractmethod, ABC
 
 import torch
-import torchaudio
 import torchaudio.transforms as T
-from torchaudio import functional
 
 
 class BaseConverter(ABC):
@@ -16,11 +14,6 @@ class BaseConverter(ABC):
 
 
 class WavConverter(BaseConverter):
-    def __init__(
-        self,
-    ):
-        super().__init__()
-
     def convert(
         self,
         waveform: torch.Tensor,
