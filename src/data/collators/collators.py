@@ -2,18 +2,18 @@ import torch
 import torch.nn.functional as F
 
 
-def spectrogram_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
+def spectrogram_collate_function(batches: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
     spectrograms: list[torch.Tensor] = []
     classes: list[int] = []
 
     max_length: int = 0
-    for i, _ in enumerate(batch):
+    for current_spectrogram, current_class in batches:
         max_length = max(
             max_length,
-            batch[i][0].shape[-1],
+            current_spectrogram.shape[-1],
         )
 
-    for current_spectrogram, current_class in batch:
+    for current_spectrogram, current_class in batches:
         spectrograms.append(
             F.pad(
                 current_spectrogram,
