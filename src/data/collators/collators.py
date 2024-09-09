@@ -7,7 +7,7 @@ def spectrogram_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple
     classes: list[int] = []
 
     max_length: int = 0
-    for i in range(len(batch)):
+    for i, _ in enumerate(batch):
         max_length = max(
             max_length,
             batch[i][0].shape[-1],
