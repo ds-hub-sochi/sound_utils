@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 
 def spectrogram_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
@@ -33,7 +34,7 @@ def spectrogram_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple
 
 
 def wav_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
-    waveforms: list[torch.Tensor[ = []
+    waveforms: list[torch.Tensor] = []
     classes: list[torch.Tensor] = []
 
     for current_waveform, current_class in batch:
