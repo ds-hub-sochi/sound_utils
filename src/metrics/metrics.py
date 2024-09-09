@@ -1,6 +1,6 @@
 def target_class_precision(
-    predicted_classes: list[int],
     real_classes: list[int],
+    predicted_classes: list[int],
     target_class: int,
 ) -> float:
     true_positive_cases: int = 0
@@ -17,8 +17,8 @@ def target_class_precision(
 
 
 def target_class_recall(
-    predicted_classes: list[int],
     real_classes: list[int],
+    predicted_classes: list[int],
     target_class: int,
 ) -> float:
     true_positive_cases: int = 0

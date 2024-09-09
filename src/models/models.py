@@ -4,7 +4,7 @@ import torchaudio
 from torch import nn
 
 
-class MelSpectrogramBasedClassifier(nn.Module):
+class SpectrogramBasedClassifier(nn.Module):
     def __init__(
         self,
         num_classes: int,
@@ -38,6 +38,18 @@ class MelSpectrogramBasedClassifier(nn.Module):
                 padding=self._model.conv_proj.padding[0],
                 dtype=torch.float32,
             )
+        elif hasattr(
+            self._model,
+            'features',
+        ):
+            self._model.features[0][0] = nn.Conv2d(
+                1,
+                self._model.features[0][0].out_channels,
+                kernel_size=self._model.features[0][0].kernel_size[0],
+                stride=self._model.features[0][0].stride[0],
+                padding=self._model.features[0][0].padding[0],
+                dtype=torch.float32,
+            )
 
         if hasattr(
             self._model,
@@ -55,6 +67,16 @@ class MelSpectrogramBasedClassifier(nn.Module):
         ):
             num_features = self._model.heads.head.in_features
             self._model.heads = nn.Linear(
+                num_features,
+                num_classes,
+                dtype=torch.float32,
+            )
+        elif hasattr(
+            self._model,
+            'classifier',
+        ):
+            num_features = self._model.classifier[1].in_features
+            self._model.classifier[1] = nn.Linear(
                 num_features,
                 num_classes,
                 dtype=torch.float32,

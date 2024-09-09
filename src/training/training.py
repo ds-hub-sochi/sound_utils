@@ -2,7 +2,7 @@ import pathlib
 
 import numpy as np
 import torch
-from sklearn.metrics import f1_score
+from sklearn.metrics import fbeta_score
 from tqdm import tqdm
 
 from src.metrics.metrics import target_class_precision, target_class_recall
@@ -56,13 +56,13 @@ def train_step(
             train_predictions.extend(predictions.cpu().detach().numpy().argmax(axis=1))
             train_targets.extend(targets.cpu().detach().numpy())
 
-    train_f1: float = f1_score(train_targets, train_predictions, average='macro')
+    train_fbeta: float = fbeta_score(train_targets, train_predictions, average='macro', beta=2)
     train_precision: float = target_class_precision(train_targets, train_predictions, 0)
     train_recall: float = target_class_recall(train_targets, train_predictions, 0)
 
     return {
         'loss': np.mean(train_loss),
-        'f1-macro': train_f1,
+        'f2-macro': train_fbeta,
         'target recall': train_recall,
         'target precision': train_precision,
     }
@@ -91,13 +91,13 @@ def eval_step(
         val_predictions.extend(predictions.cpu().numpy().argmax(axis=1))
         val_targets.extend(targets.cpu().numpy())
 
-    val_f1: float = f1_score(val_targets, val_predictions, average='macro')
-    val_precision: float = target_class_precision(val_predictions, val_targets, 0)
-    val_recall: float = target_class_recall(val_predictions, val_targets, 0)
+    val_fbeta: float = fbeta_score(val_targets, val_predictions, average='macro', beta=2)
+    val_precision: float = target_class_precision(val_targets, val_predictions, 0)
+    val_recall: float = target_class_recall(val_targets, val_predictions, 0)
 
     return {
         'loss': np.mean(val_loss),
-        'f1-macro': val_f1,
+        'f2-macro': val_fbeta,
         'target recall': val_recall,
         'target precision': val_precision,
     }
@@ -149,7 +149,7 @@ def train(  # pylint: disable=[too-many-arguments]
 
     keys: list[str] = [
         'loss',
-        'f1-macro',
+        'f2-macro',
         'target precision',
         'target recall',
     ]
@@ -159,7 +159,7 @@ def train(  # pylint: disable=[too-many-arguments]
             'val': [],
         }
 
-    max_f1: float = 0.
+    max_fbeta: float = 0.0
 
     for epoch in range(n_epochs):
         train_results: dict[str, float] = train_step(
@@ -171,6 +171,7 @@ def train(  # pylint: disable=[too-many-arguments]
             device,
             scaler,
         )
+
         for key in keys:
             print(f'Train {key}:', train_results[key], end='\n')
             metric_storage[key]['train'].append(train_results[key])
@@ -182,12 +183,13 @@ def train(  # pylint: disable=[too-many-arguments]
             epoch,
             device,
         )
+  
         for key in keys:
             print(f'Eval {key}:', eval_results[key], end='\n')
             metric_storage[key]['val'].append(eval_results[key])
 
-        if eval_results['f1-macro'] > max_f1:
-            max_f1 = eval_results['f1-macro']
+        if eval_results['f2-macro'] > max_fbeta:
+            max_fbeta = eval_results['f2-macro']
             save_model(
                 model,
                 checkpoint_dir,

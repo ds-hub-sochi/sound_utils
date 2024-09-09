@@ -17,15 +17,15 @@ def get_targets_and_predicitons(
 
     for batch, targets in tqdm(dataloader):        
         batch: torch.Tensor = batch.to(device)
-        targets: torch.Tensor = targets.to(device)
+        # targets: torch.Tensor = targets.to(device)
         predictions: torch.Tensor = model(batch)
                         
         val_predictions.extend(predictions.cpu().numpy().argmax(axis=1))
         val_targets.extend(targets.cpu().numpy())
 
     return (
-        val_predictions,
         val_targets,
+        val_predictions,
     )
 
 @torch.inference_mode()
@@ -51,8 +51,8 @@ def get_precision_recall_threshold(
 
     for threshold in thresholds:
         predicted_classes = np.where(np.array(val_probabilities) > threshold, 0, 1)
-        precision_scores.append(target_class_precision(predicted_classes, val_targets, 0))
-        recall_scores.append(target_class_recall(predicted_classes, val_targets, 0))
+        precision_scores.append(target_class_precision(val_targets, predicted_classes, 0))
+        recall_scores.append(target_class_recall(val_targets, predicted_classes, 0))
 
     return (
         precision_scores,
