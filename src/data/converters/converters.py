@@ -90,7 +90,7 @@ class MelSpectrogramDBConverter(MelSpectrogramConverter):
         return self._to_db(self._to_mel_spectrogram(waveform))
 
 
-class ToMFCCConverter(BaseConverter):
+class MFCCConverter(BaseConverter):
     def __init__(
         self,
         sample_rate: int,
