@@ -49,3 +49,9 @@ def wav_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.T
         ).squeeze(-1).T,
         torch.LongTensor(classes),
     )
+
+
+def speechbrain_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
+    waveform_batch, labels_batch = wav_collate_function(batch)
+    
+    return waveform_batch.unsqueeze(-1), labels_batch
