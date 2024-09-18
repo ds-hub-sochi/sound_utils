@@ -139,3 +139,47 @@ class LFCCConverter(BaseConverter):
         waveform: torch.Tensor,
     ) -> torch.Tensor:
         return self._to_lfcc(waveform)
+
+
+class ASTConverter(BaseConverter):
+    def __init__(
+        self,
+        feature_extractor: torch.nn.Module,
+        sample_rate: int,
+    ):
+        self._feature_extractor: torch.nn.Module = feature_extractor
+        self._sample_rate: int = sample_rate
+
+    def convert(
+        self,
+        waveform: torch.Tensor,
+    ) -> torch.Tensor:
+        waveform = waveform.view(-1)
+        
+        return self._feature_extractor(
+            waveform,
+            sampling_rate=self._sample_rate,
+            return_tensors='pt',
+        )['input_values']
+
+
+class WhisperConverter(BaseConverter):
+    def __init__(
+        self,
+        feature_extractor: torch.nn.Module,
+        sample_rate: int,
+    ):
+        self._feature_extractor: torch.nn.Module = feature_extractor
+        self._sample_rate: int = sample_rate
+
+    def convert(
+        self,
+        waveform: torch.Tensor,
+    ) -> torch.Tensor:
+        waveform = waveform.view(-1)
+        
+        return self._feature_extractor(
+            waveform,
+            sampling_rate=self._sample_rate,
+            return_tensors='pt',
+        )['input_features']
