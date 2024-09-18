@@ -17,10 +17,10 @@ def get_targets_and_predicitons(
     val_predictions: list[float] = []
     val_targets: list[float] = []
 
-    for batch, targets in tqdm(dataloader):        
+    for batch, targets in tqdm(dataloader):
         batch: torch.Tensor = batch.to(device)
         predictions: torch.Tensor = model(batch)
-                        
+
         val_predictions.extend(predictions.cpu().numpy().argmax(axis=1))
         val_targets.extend(targets.cpu().numpy())
 
@@ -28,6 +28,7 @@ def get_targets_and_predicitons(
         val_targets,
         val_predictions,
     )
+
 
 @torch.inference_mode()
 def get_precision_recall_threshold(
@@ -40,12 +41,14 @@ def get_precision_recall_threshold(
     val_probabilities: list[float] = []
     val_targets: list[float] = []
 
-    for batch, targets in tqdm(dataloader):        
+    for batch, targets in tqdm(dataloader):
         batch: torch.Tensor = batch.to(device)
         predictions: torch.Tensor = model(batch)
 
         val_targets.extend(targets.cpu().numpy())
-        val_probabilities.extend([round(value, 2) for value in F.softmax(predictions, dim=1)[:, target_class].cpu().numpy()])
+        val_probabilities.extend(
+            [round(value, 2) for value in F.softmax(predictions, dim=1)[:, target_class].cpu().numpy()]
+        )
 
     precision_scores: list[float] = []
     recall_scores: list[float] = []
@@ -53,7 +56,7 @@ def get_precision_recall_threshold(
     thresholds: list[float] = sorted(list(set(val_probabilities)))
 
     other_class: int = 1 if not target_class else 0
-    
+
     for threshold in thresholds:
         predicted_classes = np.where(
             np.array(val_probabilities) > threshold,
