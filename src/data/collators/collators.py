@@ -50,7 +50,47 @@ def wav_collate_function(
             waveforms,
             batch_first=False,
             padding_value=0,
-        ).squeeze(-1).T,
+        )
+        .squeeze(-1)
+        .T,
+        torch.LongTensor(classes),
+    )
+
+
+def ast_collate_function(
+    batch: list[tuple[torch.Tensor, int]],
+) -> tuple[torch.Tensor, torch.Tensor]:
+    tensors: list[torch.Tensor] = []
+    classes: list[int] = []
+
+    for tensor, current_class in batch:
+        tensors.append(tensor)
+        classes.append(current_class)
+
+    return (
+        torch.cat(
+            tensors,
+            dim=0,
+        ),
+        torch.LongTensor(classes),
+    )
+
+
+def whisper_collate_function(
+    batch: list[tuple[torch.Tensor, int]],
+) -> tuple[torch.Tensor, torch.Tensor]:
+    tensors: list[torch.Tensor] = []
+    classes: list[int] = []
+
+    for tensor, current_class in batch:
+        tensors.append(tensor)
+        classes.append(current_class)
+
+    return (
+        torch.cat(
+            tensors,
+            dim=0,
+        ),
         torch.LongTensor(classes),
     )
 
