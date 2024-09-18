@@ -215,7 +215,7 @@ class SpeechBrainWrapper(EncoderClassifier):
     ) -> torch.Tensor:
         emb = self.encode_batch(wavs)
 
-        logits = self.mods.classifier(emb).squeeze(1)
+        return self.mods.classifier(emb).squeeze(1)
 
         return logits
 
@@ -229,12 +229,12 @@ class SpeechBrainWrapper(EncoderClassifier):
 class SpeechBrainBasedClassifier(SpeechBrainWrapper):
     def __init__(
         self,
-        model: nn.Module,
+        model: SpeechBrainWrapper,
         n_classes: int,
     ):
         super().__init__()
         
-        self._model: nn.Module = model
+        self._model: SpeechBrainWrapper = model
         
         in_features = self._model.mods.classifier.out.w.in_features
         self._model.mods.classifier.out.w = torch.nn.Linear(
