@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import torch
 import torchaudio.transforms as T
@@ -29,7 +29,7 @@ class SpectrogramConverter(BaseConverter):
     ):
         super().__init__()
 
-        self._to_spectrogram: T.Spectrogram  = T.Spectrogram(
+        self._to_spectrogram: T.Spectrogram = T.Spectrogram(
             n_fft=n_fft,
             normalized=normalize,
         )
@@ -82,7 +82,7 @@ class MelSpectrogramDBConverter(MelSpectrogramConverter):
         )
 
         self._to_db = T.AmplitudeToDB()
-    
+
     def convert(
         self,
         waveform: torch.Tensor,
@@ -117,7 +117,7 @@ class MFCCConverter(BaseConverter):
         return self._to_mfcc(waveform)
 
 
-class ToLFCCConverter(BaseConverter):
+class LFCCConverter(BaseConverter):
     def __init__(
         self,
         sample_rate: int,
@@ -139,3 +139,47 @@ class ToLFCCConverter(BaseConverter):
         waveform: torch.Tensor,
     ) -> torch.Tensor:
         return self._to_lfcc(waveform)
+
+
+class ASTConverter(BaseConverter):
+    def __init__(
+        self,
+        feature_extractor: torch.nn.Module,
+        sample_rate: int,
+    ):
+        self._feature_extractor: torch.nn.Module = feature_extractor
+        self._sample_rate: int = sample_rate
+
+    def convert(
+        self,
+        waveform: torch.Tensor,
+    ) -> torch.Tensor:
+        waveform = waveform.view(-1)
+        
+        return self._feature_extractor(
+            waveform,
+            sampling_rate=self._sample_rate,
+            return_tensors='pt',
+        )['input_values']
+
+
+class WhisperConverter(BaseConverter):
+    def __init__(
+        self,
+        feature_extractor: torch.nn.Module,
+        sample_rate: int,
+    ):
+        self._feature_extractor: torch.nn.Module = feature_extractor
+        self._sample_rate: int = sample_rate
+
+    def convert(
+        self,
+        waveform: torch.Tensor,
+    ) -> torch.Tensor:
+        waveform = waveform.view(-1)
+        
+        return self._feature_extractor(
+            waveform,
+            sampling_rate=self._sample_rate,
+            return_tensors='pt',
+        )['input_features']

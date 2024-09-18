@@ -1,7 +1,9 @@
 import torch
 import torch.nn.functional as F
 import torchaudio
+import transformers
 from torch import nn
+from speechbrain.inference.classifiers import EncoderClassifier  # pylint: disable=[import-error]
 
 
 class SpectrogramBasedClassifier(nn.Module):
@@ -92,8 +94,8 @@ class SpectrogramBasedClassifier(nn.Module):
 class WavBasedClassifier(nn.Module):
     def __init__(
         self,
-        feature_extractor: torchaudio.models.Wav2Vec2Model,
         n_classes: int,
+        feature_extractor: nn.Module,
         n_first_encoder_layers_to_use: int,
     ):
         super().__init__()
@@ -135,3 +137,112 @@ class WavBasedClassifier(nn.Module):
         embeddings: torch.Tensor = self.feature_extractor(input_tensor)[0].max(axis=1).values
 
         return F.normalize(embeddings)
+
+
+class ASTBasedClassifier(nn.Module):
+    def __init__(
+        self,
+        model: transformers.ASTForAudioClassification,
+        n_classes: int,
+    ):
+        super().__init__()
+
+        in_features: int = model.classifier.dense.in_features
+        
+        self._model: transformers.ASTForAudioClassification = model
+        self._model.classifier.dense = nn.Linear(
+            in_features,
+            n_classes,
+        )
+
+    def forward(
+        self,
+        input_tensor: torch.Tensor,
+    ) -> torch.Tensor:
+        return self._model(input_tensor).logits
+
+
+class WhisperBasedClassifier(nn.Module):
+    def __init__(
+        self,
+        model: transformers.WhisperForAudioClassification,
+        n_classes: int,
+        n_first_encoders_to_use: int,
+    ):
+        super().__init__()
+
+        in_features: int = model.classifier.in_features
+        
+        self._model: transformers.WhisperForAudioClassification = model
+        self._model.encoder.layers = self._model.encoder.layers[:n_first_encoders_to_use]
+        self._model.classifier = nn.Linear(
+            in_features,
+            n_classes,
+        )
+
+    def forward(
+        self,
+        input_tensor: torch.Tensor,
+    ) -> torch.Tensor:
+        return self._model(input_tensor).logits
+
+
+class SpeechBrainWrapper(EncoderClassifier):
+    def encode_batch(
+        self,
+        wavs: torch.Tensor,
+    ) -> torch.Tensor:
+        if len(wavs.shape) == 1:
+            wavs = wavs.unsqueeze(0)
+
+        wav_lens: torch.Tensor = torch.ones(wavs.shape[0], device=self.device)
+
+        wavs = wavs.float()
+
+        feats: torch.Tensor = self.mods.compute_features(wavs)
+        feats = self.mods.mean_var_norm(feats, wav_lens)
+        feats = feats.mean(axis=-1)  # type: ignore
+        embeddings: torch.Tensor = self.mods.embedding_model(
+            feats,
+            wav_lens,
+        )
+
+        return embeddings
+
+    def classify_batch(
+        self,
+        wavs: torch.Tensor,
+    ) -> torch.Tensor:
+        emb = self.encode_batch(wavs)
+
+        return self.mods.classifier(emb).squeeze(1)
+
+    def forward(
+        self,
+        wavs: torch.Tensor,
+    ):
+        return self.classify_batch(wavs)
+
+
+class SpeechBrainBasedClassifier(nn.Module):
+    def __init__(
+        self,
+        model: SpeechBrainWrapper,
+        n_classes: int,
+    ):
+        super().__init__()
+        
+        self._model: SpeechBrainWrapper = model
+        
+        in_features = self._model.mods.classifier.out.w.in_features
+        self._model.mods.classifier.out.w = torch.nn.Linear(
+            in_features,
+            n_classes,
+        )
+        self._model.mods.classifier.softmax = torch.nn.Identity()
+
+    def forward(
+        self,
+        input_tensor: torch.Tensor,
+    ) -> torch.Tensor:
+        return self._model(input_tensor)
