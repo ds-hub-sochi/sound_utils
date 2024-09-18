@@ -2,12 +2,14 @@ import torch
 import torch.nn.functional as F
 
 
-def spectrogram_collate_function(batches: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
+def spectrogram_collate_function(
+    batches: list[tuple[torch.Tensor, int]],
+) -> tuple[torch.Tensor, torch.Tensor]:
     spectrograms: list[torch.Tensor] = []
     classes: list[int] = []
 
     max_length: int = 0
-    for current_spectrogram, current_class in batches:
+    for current_spectrogram, _ in batches:
         max_length = max(
             max_length,
             current_spectrogram.shape[-1],
@@ -23,7 +25,7 @@ def spectrogram_collate_function(batches: list[tuple[torch.Tensor, int]]) -> tup
                 ),
                 mode='constant',
                 value=0,
-            )
+            ),
         )
         classes.append(current_class)
 
@@ -33,9 +35,11 @@ def spectrogram_collate_function(batches: list[tuple[torch.Tensor, int]]) -> tup
     )
 
 
-def wav_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
+def wav_collate_function(
+    batch: list[tuple[torch.Tensor, int]],
+) -> tuple[torch.Tensor, torch.Tensor]:
     waveforms: list[torch.Tensor] = []
-    classes: list[torch.Tensor] = []
+    classes: list[int] = []
 
     for current_waveform, current_class in batch:
         waveforms.append(current_waveform.T)
@@ -51,7 +55,9 @@ def wav_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.T
     )
 
 
-def speechbrain_collate_function(batch: list[tuple[torch.Tensor, int]]) -> tuple[torch.Tensor, torch.Tensor]:
+def speechbrain_collate_function(
+    batch: list[tuple[torch.Tensor, int]],
+) -> tuple[torch.Tensor, torch.Tensor]:
     waveform_batch, labels_batch = wav_collate_function(batch)
-    
+
     return waveform_batch.unsqueeze(-1), labels_batch
