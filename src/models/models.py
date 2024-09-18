@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import torchaudio
 import transformers
 from torch import nn
-from speechbrain.inference.classifiers import EncoderClassifier  # 
+from speechbrain.inference.classifiers import EncoderClassifier  # pylint: disable=[import-error]
 
 
 class SpectrogramBasedClassifier(nn.Module):
@@ -217,8 +217,6 @@ class SpeechBrainWrapper(EncoderClassifier):
 
         return self.mods.classifier(emb).squeeze(1)
 
-        return logits
-
     def forward(
         self,
         wavs: torch.Tensor,
@@ -226,7 +224,7 @@ class SpeechBrainWrapper(EncoderClassifier):
         return self.classify_batch(wavs)
 
 
-class SpeechBrainBasedClassifier(SpeechBrainWrapper):
+class SpeechBrainBasedClassifier(nn.Module):
     def __init__(
         self,
         model: SpeechBrainWrapper,
