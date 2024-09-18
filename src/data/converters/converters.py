@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import torch
 import torchaudio.transforms as T
@@ -29,7 +29,7 @@ class SpectrogramConverter(BaseConverter):
     ):
         super().__init__()
 
-        self._to_spectrogram: T.Spectrogram  = T.Spectrogram(
+        self._to_spectrogram: T.Spectrogram = T.Spectrogram(
             n_fft=n_fft,
             normalized=normalize,
         )
@@ -82,7 +82,7 @@ class MelSpectrogramDBConverter(MelSpectrogramConverter):
         )
 
         self._to_db = T.AmplitudeToDB()
-    
+
     def convert(
         self,
         waveform: torch.Tensor,
@@ -117,7 +117,7 @@ class MFCCConverter(BaseConverter):
         return self._to_mfcc(waveform)
 
 
-class ToLFCCConverter(BaseConverter):
+class LFCCConverter(BaseConverter):
     def __init__(
         self,
         sample_rate: int,
