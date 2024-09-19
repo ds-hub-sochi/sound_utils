@@ -299,3 +299,48 @@ def preprocess_birdclef_dataset(
                 label2content[label][filename].append(chunk)
 
     return label2content
+
+
+def preprocess_esc50_dataset(
+    metainformation: pd.DataFrame,
+    path_to_data_dir: str,
+    animal_categories: list[str],
+    sample_rate: int,
+    chunk_size: int,
+) -> dict[str, dict[str, list[torch.Tensor]]]:
+    label2content: dict[str, dict[str, list[torch.Tensor]]] = {}
+
+    for i in tqdm(metainformation.index):
+        filename: str = metainformation.loc[i].filename
+        filename = filename.split('.')[0]
+        category: str = metainformation.loc[i].category
+        label: str = 'other_animal' if category in animal_categories else 'no_animal'
+
+        arr, current_sample_rate = torchaudio.load(f'{path_to_data_dir}/{filename}.wav')
+        if current_sample_rate != sample_rate:
+            arr = torchaudio.functional.resample(
+                arr,
+                orig_freq=current_sample_rate,
+                new_freq=sample_rate,
+            )
+        arr = torch.mean(
+            arr,
+            dim=0,
+            keepdim=True,
+        )
+
+        chunks: tuple[torch.Tensor, ...] = torch.split(
+            arr,
+            chunk_size * sample_rate,
+            dim=1,
+        )
+
+        for chunk in chunks:
+            if chunk.shape[1] > sample_rate:
+                if label not in label2content:
+                    label2content[label] = {}
+                if filename not in label2content[label]:
+                    label2content[label][filename] = []
+                label2content[label][filename].append(chunk)
+
+    return label2content
