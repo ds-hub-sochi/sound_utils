@@ -2,7 +2,6 @@ import pathlib
 import typing as tp
 from math import ceil
 
-import numpy as np
 import pandas as pd
 import torch
 import torchaudio
@@ -186,7 +185,7 @@ def preprocess_nsu_dogs_and_weather_dataset(
     return label2content
 
 
-def preprocess_nsu_wolfs_dogs_and_other_dataset(
+def preprocess_nsu_wolfs_dogs_and_other_dataset(  # pylint: disable=[too-many-branches]
     all_files: list[str],
     negative_markup: list[dict[str, tp.Any]],
     sample_rate: int,
@@ -194,7 +193,7 @@ def preprocess_nsu_wolfs_dogs_and_other_dataset(
 ) -> dict[str, dict[str, list[torch.Tensor]]]:
     label2content: dict[str, dict[str, list[torch.Tensor]]] = {}
 
-    for file in tqdm(all_files):
+    for file in tqdm(all_files):  # pylint: disable=[too-many-nested-blocks]
         label: str = file.split('/')[-2]
         filename, extension = file.split('/')[-1].split('.')
 
@@ -246,7 +245,7 @@ def preprocess_nsu_wolfs_dogs_and_other_dataset(
                                 if filename not in label2content[markup_label]:
                                     label2content[markup_label][filename] = []
                                 label2content[markup_label][filename].append(chunk)
-                    elif markup_label in ['no_animal', 'insect']:
+                    elif markup_label in {'no_animal', 'insect'}:
                         global_label = 'no_animal'
                         for chunk in chunks:
                             if chunk.shape[1] > sample_rate:
