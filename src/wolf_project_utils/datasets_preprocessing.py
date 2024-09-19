@@ -39,64 +39,64 @@ def fill_train_val_test_dirs(
     for label in label2content:
         current_label_files: list[str] = list(label2content[label])
         number_of_files: int = len(current_label_files)
-    
+
         start: int = 0
         end: int = ceil(number_of_files * train_size)
         train_files: list[str] = current_label_files[start:end]
-    
+
         pathlib.Path(f'{train_dump_dir}/{label}/{additional_label}').mkdir(
             parents=True,
             exist_ok=True,
         )
-    
+
         for filename in tqdm(train_files):
             for index, waveform in enumerate(label2content[label][filename]):
                 torchaudio.save(
                     f'{train_dump_dir}/{label}/{additional_label}/{index}_{filename}.wav',
                     waveform,
-                    sample_rate = sample_rate,
-                    channels_first = True,
+                    sample_rate=sample_rate,
+                    channels_first=True,
                     format='wav',
                 )
 
         del train_files
-    
+
         start = end
         end = start + ceil(number_of_files * validation_size)
         validation_files: list[str] = current_label_files[start:end]
-    
+
         pathlib.Path(f'{validation_dump_dir}/{label}/{additional_label}').mkdir(
             parents=True,
             exist_ok=True,
         )
-    
+
         for filename in tqdm(validation_files):
             for index, waveform in enumerate(label2content[label][filename]):
                 torchaudio.save(
                     f'{validation_dump_dir}/{label}/{additional_label}/{index}_{filename}.wav',
                     waveform,
-                    sample_rate = sample_rate,
-                    channels_first = True,
+                    sample_rate=sample_rate,
+                    channels_first=True,
                     format='wav',
                 )
 
         del validation_files
-    
+
         start = end
         test_files: list[str] = current_label_files[start:]
-    
+
         pathlib.Path(f'{test_dump_dir}/{label}/{additional_label}').mkdir(
             parents=True,
             exist_ok=True,
         )
-    
+
         for filename in tqdm(test_files):
             for index, waveform in enumerate(label2content[label][filename]):
                 torchaudio.save(
                     f'{test_dump_dir}/{label}/{additional_label}/{index}_{filename}.wav',
                     waveform,
-                    sample_rate = sample_rate,
-                    channels_first = True,
+                    sample_rate=sample_rate,
+                    channels_first=True,
                     format='wav',
                 )
 
@@ -110,8 +110,8 @@ def preprocess_dataset_from_jose(
 
     for file in tqdm(all_files):
         label, filename = file.split('/')[-2:]
-        filename = filename.split('.')[0]
-    
+        filename, _ = filename.split('.')
+
         arr, current_sample_rate = torchaudio.load(file)
         if current_sample_rate != sample_rate:
             arr = torchaudio.functional.resample(
@@ -124,13 +124,13 @@ def preprocess_dataset_from_jose(
             dim=0,
             keepdim=True,
         )
-        
+
         chunks: tuple[torch.Tensor, ...] = torch.split(
             arr,
             chunk_size * sample_rate,
             dim=1,
         )
-    
+
         for chunk in chunks:
             if chunk.shape[1] > sample_rate:
                 if label not in label2content:
@@ -153,9 +153,9 @@ def preprocess_nsu_dogs_and_weather_dataset(
 
     for i in tqdm(metainformation.index):
         file_path: str = metainformation.loc[i].path
-        filename: str = file_path.split('/')[-1].split('.')[0]
+        filename, _ = file_path.split('/')[-1].split('.')
         label: str = 'other_animal' if metainformation.loc[i].sub_class in dog_subclasses else 'no_animal'
-    
+
         arr, current_sample_rate = torchaudio.load(f'{path_to_data_dir}/{file_path}')
         if current_sample_rate != sample_rate:
             arr = torchaudio.functional.resample(
@@ -174,7 +174,7 @@ def preprocess_nsu_dogs_and_weather_dataset(
             chunk_size * sample_rate,
             dim=1,
         )
-    
+
         for chunk in chunks:
             if chunk.shape[1] > sample_rate:
                 if label not in label2content:
@@ -196,8 +196,8 @@ def preprocess_nsu_wolfs_dogs_and_other_dataset(
 
     for file in tqdm(all_files):
         label: str = file.split('/')[-2]
-        filename: str = file.split('/')[-1].split('.')[0]
-    
+        filename, extension = file.split('/')[-1].split('.')
+
         arr, current_sample_rate = torchaudio.load(file)
         if current_sample_rate != sample_rate:
             arr = torchaudio.functional.resample(
@@ -210,13 +210,13 @@ def preprocess_nsu_wolfs_dogs_and_other_dataset(
             dim=0,
             keepdim=True,
         )
-    
+
         chunks: tuple[torch.Tensor, ...] = torch.split(
             arr,
             chunk_size * sample_rate,
             dim=1,
         )
-    
+
         if label == 'wolf':
             for chunk in chunks:
                 if chunk.shape[1] > sample_rate:
@@ -236,7 +236,7 @@ def preprocess_nsu_wolfs_dogs_and_other_dataset(
                     label2content[global_label][filename].append(chunk)
         elif label == 'negative':
             for markup in negative_markup:
-                if f'{filename}.wav' == markup['file_name']:
+                if f'{filename}.{extension}' == markup['file_name']:
                     markup_label: str = markup['result']['type_speaker']
                     if markup_label == 'other_animal':
                         for chunk in chunks:
@@ -268,9 +268,9 @@ def preprocess_birdclef_dataset(
     label2content: dict[str, dict[str, list[torch.Tensor]]] = {}
 
     for file in tqdm(all_files):
-        filename: str = file.split('/')[-1].split('.')[0]
+        filename, _ = file.split('/')[-1].split('.')
         label: str = 'other_animal'
-    
+
         arr, current_sample_rate = torchaudio.load(file)
         if current_sample_rate != sample_rate:
             arr = torchaudio.functional.resample(
@@ -283,13 +283,13 @@ def preprocess_birdclef_dataset(
             dim=0,
             keepdim=True,
         )
-    
+
         chunks: tuple[torch.Tensor, ...] = torch.split(
             arr,
             chunk_size * sample_rate,
             dim=1,
         )
-    
+
         for chunk in chunks:
             if chunk.shape[1] > sample_rate:
                 if label not in label2content:
@@ -312,11 +312,104 @@ def preprocess_esc50_dataset(
 
     for i in tqdm(metainformation.index):
         filename: str = metainformation.loc[i].filename
-        filename = filename.split('.')[0]
+        filename, extension = filename.split('.')
         category: str = metainformation.loc[i].category
         label: str = 'other_animal' if category in animal_categories else 'no_animal'
 
-        arr, current_sample_rate = torchaudio.load(f'{path_to_data_dir}/{filename}.wav')
+        arr, current_sample_rate = torchaudio.load(f'{path_to_data_dir}/{filename}.{extension}')
+        if current_sample_rate != sample_rate:
+            arr = torchaudio.functional.resample(
+                arr,
+                orig_freq=current_sample_rate,
+                new_freq=sample_rate,
+            )
+        arr = torch.mean(
+            arr,
+            dim=0,
+            keepdim=True,
+        )
+
+        chunks: tuple[torch.Tensor, ...] = torch.split(
+            arr,
+            chunk_size * sample_rate,
+            dim=1,
+        )
+
+        for chunk in chunks:
+            if chunk.shape[1] > sample_rate:
+                if label not in label2content:
+                    label2content[label] = {}
+                if filename not in label2content[label]:
+                    label2content[label][filename] = []
+                label2content[label][filename].append(chunk)
+
+    return label2content
+
+
+def preprocess_fsc22_dataset(
+    metainformation: pd.DataFrame,
+    path_to_data_dir: str,
+    no_animal_categoris: list[str],
+    other_animal_categories: list[str],
+    sample_rate: int,
+    chunk_size: int,
+) -> dict[str, dict[str, list[torch.Tensor]]]:
+    label2content: dict[str, dict[str, list[torch.Tensor]]] = {}
+
+    for i in tqdm(metainformation.index):
+        filename: str = metainformation.loc[i]['Dataset File Name']
+        filename, extention = filename.split('.')
+        category: str = metainformation.loc[i]['Class Name']
+
+        if category in no_animal_categoris:
+            label: str = 'no_animal'
+        elif category in other_animal_categories:
+            label = 'other_animal'
+        else:
+            label = 'wolf'
+
+        arr, current_sample_rate = torchaudio.load(f'{path_to_data_dir}/{filename}.{extention}')
+        if current_sample_rate != sample_rate:
+            arr = torchaudio.functional.resample(
+                arr,
+                orig_freq=current_sample_rate,
+                new_freq=sample_rate,
+            )
+        arr = torch.mean(
+            arr,
+            dim=0,
+            keepdim=True,
+        )
+
+        chunks: tuple[torch.Tensor, ...] = torch.split(
+            arr,
+            chunk_size * sample_rate,
+            dim=1,
+        )
+
+        for chunk in chunks:
+            if chunk.shape[1] > sample_rate:
+                if label not in label2content:
+                    label2content[label] = {}
+                if filename not in label2content[label]:
+                    label2content[label][filename] = []
+                label2content[label][filename].append(chunk)
+
+    return label2content
+
+
+def preprocess_rainforest_dataset(
+    all_files: list[str],
+    sample_rate: int,
+    chunk_size: int,
+) -> dict[str, dict[str, list[torch.Tensor]]]:
+    label2content: dict[str, dict[str, list[torch.Tensor]]] = {}
+
+    for file in tqdm(all_files):
+        filename, _ = file.split('/')[-1].split('.')
+        label: str = 'other_animal'
+
+        arr, current_sample_rate = torchaudio.load(file)
         if current_sample_rate != sample_rate:
             arr = torchaudio.functional.resample(
                 arr,
