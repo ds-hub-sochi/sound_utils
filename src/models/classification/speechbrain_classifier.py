@@ -1,6 +1,6 @@
 import torch
-from torch import nn
 from speechbrain.inference.classifiers import EncoderClassifier  # pylint: disable=[import-error]
+from torch import nn
 
 
 class SpeechBrainWrapper(EncoderClassifier):
@@ -47,9 +47,9 @@ class SpeechBrainBasedClassifier(nn.Module):
         n_classes: int,
     ):
         super().__init__()
-        
+
         self._model: SpeechBrainWrapper = model
-        
+
         in_features = self._model.mods.classifier.out.w.in_features
         self._model.mods.classifier.out.w = torch.nn.Linear(
             in_features,

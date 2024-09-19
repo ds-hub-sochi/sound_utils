@@ -107,13 +107,17 @@ class WavBasedClassifier(nn.Module):
             'encoder',
         ):
             hidden_size = feature_extractor.encoder.transformer.layers[0].attention.k_proj.out_features
-            self.feature_extractor.encoder.transformer.layers = self.feature_extractor.encoder.transformer.layers[:n_first_encoder_layers_to_use]
+            self.feature_extractor.encoder.transformer.layers = self.feature_extractor.encoder.transformer.layers[
+                :n_first_encoder_layers_to_use
+            ]
         elif hasattr(
             feature_extractor,
             'model',
         ):
             hidden_size = feature_extractor.model.encoder.transformer.layers[0].attention.k_proj.out_features
-            self.feature_extractor.model.encoder.transformer.layers = self.feature_extractor.model.encoder.transformer.layers[:n_first_encoder_layers_to_use]
+            self.feature_extractor.model.encoder.transformer.layers = (
+                self.feature_extractor.model.encoder.transformer.layers[:n_first_encoder_layers_to_use]
+            )
 
         self.linear: nn.Linear = nn.Linear(
             hidden_size,
@@ -147,7 +151,7 @@ class ASTBasedClassifier(nn.Module):
         super().__init__()
 
         in_features: int = model.classifier.dense.in_features
-        
+
         self._model: transformers.ASTForAudioClassification = model
         self._model.classifier.dense = nn.Linear(
             in_features,
@@ -171,7 +175,7 @@ class WhisperBasedClassifier(nn.Module):
         super().__init__()
 
         in_features: int = model.classifier.in_features
-        
+
         self._model: transformers.WhisperForAudioClassification = model
         self._model.encoder.layers = self._model.encoder.layers[:n_first_encoders_to_use]
         self._model.classifier = nn.Linear(
