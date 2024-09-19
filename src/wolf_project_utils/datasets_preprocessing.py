@@ -125,7 +125,7 @@ def preprocess_dataset_from_jose(
             keepdim=True,
         )
         
-        chunks: list[torch.Tensor] = torch.split(
+        chunks: tuple[torch.Tensor, ...] = torch.split(
             arr,
             chunk_size * sample_rate,
             dim=1,
@@ -169,7 +169,7 @@ def preprocess_nsu_dogs_and_weather_dataset(
             keepdim=True,
         )
 
-        chunks: list[torch.Tensor] = torch.split(
+        chunks: tuple[torch.Tensor, ...] = torch.split(
             arr,
             chunk_size * sample_rate,
             dim=1,
@@ -211,7 +211,7 @@ def preprocess_nsu_wolfs_dogs_and_other_dataset(
             keepdim=True,
         )
     
-        chunks: list[torch.Tensor] = torch.split(
+        chunks: tuple[torch.Tensor, ...] = torch.split(
             arr,
             chunk_size * sample_rate,
             dim=1,
@@ -284,7 +284,7 @@ def preprocess_birdclef_dataset(
             keepdim=True,
         )
     
-        chunks: list[torch.Tensor] = torch.split(
+        chunks: tuple[torch.Tensor, ...] = torch.split(
             arr,
             chunk_size * sample_rate,
             dim=1,
