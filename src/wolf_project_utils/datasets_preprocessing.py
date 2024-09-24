@@ -25,7 +25,7 @@ def print_number_of_sample_for_classes(
         print(f'{label}: {counter}')
 
 
-def fill_train_val_test_dirs(
+def fill_train_val_test_dirs(  # pylint: disable=[too-many-positional-arguments]
     label2content: dict[str, dict[str, list[torch.Tensor]]],
     sample_rate: int,
     train_size: float,
@@ -345,7 +345,7 @@ def preprocess_esc50_dataset(
     return label2content
 
 
-def preprocess_fsc22_dataset(
+def preprocess_fsc22_dataset(  # pylint: disable=[too-many-positional-arguments]
     metainformation: pd.DataFrame,
     path_to_data_dir: str,
     no_animal_categoris: list[str],

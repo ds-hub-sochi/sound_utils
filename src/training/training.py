@@ -8,7 +8,7 @@ from tqdm import tqdm
 from src.metrics.metrics import target_class_precision, target_class_recall
 
 
-def train_step(
+def train_step(  # pylint: disable=[too-many-positional-arguments]
     model,
     optimizer,
     criterion,
@@ -24,35 +24,35 @@ def train_step(
     train_targets: list[int] = []
 
     if scaler is not None:
-        with torch.cuda.amp.autocast():      
-            for batch, targets in tqdm(train_dataloader, desc=f"Epoch: {epoch}"):
+        with torch.cuda.amp.autocast():
+            for batch, targets in tqdm(train_dataloader, desc=f'Epoch: {epoch}'):
                 batch = batch.to(device)
                 targets = targets.to(device)
-                
+
                 predictions = model(batch)
-    
+
                 optimizer.zero_grad()
                 loss = criterion(predictions, targets)
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
                 scaler.update()
-        
+
                 train_loss.append(loss.item())
                 train_predictions.extend(predictions.cpu().detach().numpy().argmax(axis=1))
                 train_targets.extend(targets.cpu().detach().numpy())
     else:
-        for batch, targets in tqdm(train_dataloader, desc=f"Epoch: {epoch}"):    
+        for batch, targets in tqdm(train_dataloader, desc=f'Epoch: {epoch}'):
             batch = batch.to(device)
             targets = targets.to(device)
-                
+
             predictions = model(batch)
-    
+
             optimizer.zero_grad()
             loss = criterion(predictions, targets)
             loss.backward()
             optimizer.step()
-            
-            train_loss.append(loss.item())    
+
+            train_loss.append(loss.item())
             train_predictions.extend(predictions.cpu().detach().numpy().argmax(axis=1))
             train_targets.extend(targets.cpu().detach().numpy())
 
@@ -67,6 +67,7 @@ def train_step(
         'target precision': train_precision,
     }
 
+
 @torch.inference_mode()
 def eval_step(
     model,
@@ -76,17 +77,17 @@ def eval_step(
     device,
 ) -> dict[str, float]:
     model.eval()
-        
+
     val_predictions = []
     val_targets = []
     val_loss = []
 
-    for batch, targets in tqdm(val_dataloader, desc=f"Epoch: {epoch}"):        
+    for batch, targets in tqdm(val_dataloader, desc=f'Epoch: {epoch}'):
         batch: torch.Tensor = batch.to(device)
         targets: torch.Tensor = targets.to(device)
         predictions: torch.Tensor = model(batch)
         loss: torch.Tensor = criterion(predictions, targets)
-            
+
         val_loss.append(loss.item())
         val_predictions.extend(predictions.cpu().numpy().argmax(axis=1))
         val_targets.extend(targets.cpu().numpy())
@@ -101,6 +102,7 @@ def eval_step(
         'target recall': val_recall,
         'target precision': val_precision,
     }
+
 
 def save_model(
     model: torch.nn.Module,
@@ -127,18 +129,19 @@ def save_model(
             f'{checkpoint_dir}/{prefix}/{name}.pth',
         )
 
-def train(  # pylint: disable=[too-many-arguments]
+
+def train(  # pylint: disable=[too-many-arguments,too-many-positional-arguments]
     model,
     optimizer,
     criterion,
-    train_dataloader, 
+    train_dataloader,
     val_dataloader,
     n_epochs,
     checkpoint_dir: str,
     prefix: str,
     device,
-    scaler = None,
-    scheduler = None,
+    scaler=None,
+    scheduler=None,
 ) -> dict[str, dict[str, float]]:
     pathlib.Path(f'{checkpoint_dir}/{prefix}').mkdir(
         parents=True,
@@ -183,7 +186,7 @@ def train(  # pylint: disable=[too-many-arguments]
             epoch,
             device,
         )
-  
+
         for key in keys:
             print(f'Eval {key}:', eval_results[key], end='\n')
             metric_storage[key]['val'].append(eval_results[key])
@@ -200,7 +203,7 @@ def train(  # pylint: disable=[too-many-arguments]
 
         if scheduler is not None:
             scheduler.step()
-    
+
     save_model(
         model,
         checkpoint_dir,
