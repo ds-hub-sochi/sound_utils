@@ -38,7 +38,9 @@ class SpectrogramConverter(BaseConverter):
         self,
         waveform: torch.Tensor,
     ) -> torch.Tensor:
-        return self._to_spectrogram(waveform)
+        spectrogram: torch.Tensor = self._to_spectrogram(waveform)
+
+        return spectrogram
 
 
 class MelSpectrogramConverter(BaseConverter):
@@ -95,8 +97,8 @@ class MFCCConverter(BaseConverter):
         self,
         sample_rate: int,
         n_mfcc: int,
-        n_fft: int,
-        n_mels: int,
+        n_fft: int = 256,
+        n_mels: int = 128,
     ):
         super().__init__()
 
@@ -104,9 +106,9 @@ class MFCCConverter(BaseConverter):
             sample_rate=sample_rate,
             n_mfcc=n_mfcc,
             melkwargs={
-                'n_fft': n_fft,
+                #    'n_fft': n_fft,
                 'n_mels': n_mels,
-                'mel_scale': 'htk',
+                #    'mel_scale': 'htk',
             },
         )
 
@@ -122,7 +124,7 @@ class LFCCConverter(BaseConverter):
         self,
         sample_rate: int,
         n_lfcc: int,
-        n_fft: int,
+        n_fft: int = 256,
     ):
         super().__init__()
 
@@ -155,7 +157,7 @@ class ASTConverter(BaseConverter):
         waveform: torch.Tensor,
     ) -> torch.Tensor:
         waveform = waveform.view(-1)
-        
+
         return self._feature_extractor(
             waveform,
             sampling_rate=self._sample_rate,
@@ -177,7 +179,7 @@ class WhisperConverter(BaseConverter):
         waveform: torch.Tensor,
     ) -> torch.Tensor:
         waveform = waveform.view(-1)
-        
+
         return self._feature_extractor(
             waveform,
             sampling_rate=self._sample_rate,
