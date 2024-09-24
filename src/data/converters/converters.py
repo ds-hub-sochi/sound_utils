@@ -106,9 +106,9 @@ class MFCCConverter(BaseConverter):
             sample_rate=sample_rate,
             n_mfcc=n_mfcc,
             melkwargs={
-                #    'n_fft': n_fft,
+                'n_fft': n_fft,
                 'n_mels': n_mels,
-                #    'mel_scale': 'htk',
+                'mel_scale': 'htk',
             },
         )
 

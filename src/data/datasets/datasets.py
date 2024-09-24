@@ -8,7 +8,7 @@ from src.data.converters.converters import BaseConverter
 
 
 class SoundClassificationDataset(Dataset):
-    def __init__(
+    def __init__(  # pylint: disable=[too-many-positional-arguments]
         self,
         data_dir: str,
         datasets_to_use: list[str],
